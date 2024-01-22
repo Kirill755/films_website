@@ -1,0 +1,167 @@
+{% extends 'movieapp/base.html' %}
+
+{% block title %}{{film.film_title}}{% endblock title %}
+
+{% block welcomeblock %}
+    <header class="header">
+    </header>
+{% endblock welcomeblock %}
+
+{% block content %}
+
+<div class = "filmcontainer" >
+    <div class = "film_picture_container">
+        <p><img class ="film_picture"  src="{{film.picture.url}}"></p>
+    </div>
+
+    <div class = "film_text_container">
+        <p style="margin-bottom: 20px; font-weight: bold; font-size: 22px">{{film.film_title}}</p>
+        <p id ="avgMark" style="margin-bottom: 20px; font-size: 22px">Средняя оценка фильма: {{avg}}</p>
+        <p class="film_name_field">Год:</p>
+        <p class="film_field">{{film.Year}}</p>
+        <p class="film_name_field">Жанр:</p>
+        <p class="film_field">{{film.genre}}</p>
+        <p class="film_name_field">Актёры:</p>
+        <p class="film_field">{{film.actors}}</p>
+        <p class="film_name_field">Режиссёр:</p>
+        <p class="film_field">{{film.director}}</p>
+        <p class="film_name_field">Описание:</p>
+        <p class="film_field">{{film.description}}</p>
+    </div>
+</div>
+{% if request.user.is_authenticated %}
+    {% if is_viewed == False %}
+    <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'add_viewed' film.id %}">Добавить в список просмотренных фильмов</a></p>
+    {% else %}
+    <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'del_viewed' film.id %}">Удалить из списка просмотренных фильмов</a></p>
+    {% endif %}
+
+    {% if is_favourite == False %}
+    <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'add_favourite' film.id %}">Добавить в избранное</a></p>
+    {% else %}
+    <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'del_favourite' film.id %}">Удалить из избранного</a></p>
+    {% endif %}
+{% endif %}
+{% if request.user.is_authenticated and review_status == False %}
+    <p style="margin-bottom: 40px" id="review_form"><a class="button_href"  href="{% url 'add_review' film.id %}">Написать рецензию на данный фильм</a></p>
+{% endif %}
+<p style="margin-bottom: 20px; font-size: 22px; font-weight: bold">Рецензии:</p>
+{% for r in reviews %}
+    <div class = "review-container">
+        <div class = "review-leftphoto">
+            {% for u in users %}
+                {% if u.id == r.user_id %}
+                    {% if u.profile.avatar %}
+                        <p style="margin-bottom: 20px"><img class = "imagereview" src="{{u.profile.avatar.url}}"></p>
+                    {%else%}
+                        <p style="margin-bottom: 20px"><img class = "imagereview" src="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png"></p>
+                    {% endif %}
+                    <p style="word-wrap: break-word; margin-bottom: 20px"><a class="button_href" href="{% url 'show_profile' u.id %}">{{u.username}}</a></p>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class ="review-righttext">
+            <p style="margin-bottom: 20px; font-size: 20px; font-weight: bold">{{r.Review_title}}</p>
+            <p style="margin-bottom: 20px">Оценка: {{r.Mark}}/10</p>
+            <div class="main_text_div">
+            <p>{{r.Main_text|linebreaks}}</p>
+            </div>
+            {% if r.user == request.user or request.user.profile.is_worker == True %}
+                <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'del_review' r.id %}">Удалить рецензию</a></p>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+<div id ="myReview"></div>
+{% if request.user.is_authenticated and review_status == False %}
+    <div class ="form_container" id ="container_form_review">
+        <p style="margin-bottom: 20px; margin-top: 20px; font-size: 22px; font-weight: bold">Написать рецензию:</p>
+        <form name ="formReview" id ="form" data-url = "{% url 'add_review_ajax' film.id %}">
+            <p>
+                <label for="name">Заголовок</label>
+                <input type="text" name="name" required>
+            </p>
+            <p>
+                <label for="review">Рецензия</label>
+                <textarea name="review" cols="45" rows="3" required></textarea>
+            </p>
+            <p>
+                <label for="mark">Оценка</label>
+                    <select name="mark" required>
+                        <option value selected>------</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+            </p>
+            <p>
+                <input type="submit" name="buttonForm" value="отправить">
+            </p>
+       </form>
+    </div>
+{% endif %}
+<script type="text/javascript">
+    if (document.forms.formReview != undefined) {
+        document.forms.formReview.onsubmit = function(e){
+            e.preventDefault();
+            var name = document.forms.formReview.name.value;
+            var review = document.forms.formReview.review.value;
+            var mark = document.forms.formReview.mark.value;
+            var formData = new FormData(document.forms.formReview);
+            var url =this.dataset.url;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST',url,true);
+
+            xhr.addEventListener("readystatechange",function (){
+                if ((xhr.readyState==4)&&(xhr.status==200)){
+                    var data =JSON.parse(xhr.response);
+                    console.log(xhr.response)
+                    if(data.success!=false) {
+                        var id = String(data.review_id);
+                        var avg = String(data.avg);
+                        let containerForm = document.getElementById('container_form_review');
+                        let container = document.getElementById('review_form');
+                        containerForm.remove();
+                        container.remove();
+                        let avgContainer = document.getElementById('avgMark');
+                        avgContainer.innerHTML = "Средняя оценка фильма: "+avg;
+                        let divs = document.getElementById('myReview');
+                        divs.innerHTML =
+                            `<div class="review-container">
+                                <div class="review-leftphoto">
+                                    {% if request.user.profile.avatar %}
+                                    <p style="margin-bottom: 20px"><img class="imagereview" src="{{request.user.profile.avatar.url}}">
+                                    </p>
+                                    {%else%}
+                                    <p style="margin-bottom: 20px"><img class="imagereview" src="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png">
+                                    </p>
+                                    {% endif %}
+                                    <p style="word-wrap: break-word; margin-bottom: 20px"><a class="button_href"href="{% url 'show_profile' request.user.id %}">{{request.user.username}}</a></p>
+                                </div>
+                                <div class="review-righttext">
+                                    <p style="margin-bottom: 20px; font-size: 20px; font-weight: bold">`+name+`</p>
+                                    <p style="margin-bottom: 20px">Оценка: `+mark+` /10</p>
+                                        <div class="main_text_div">
+                                            <p>`+review+`</p>
+                                        </div>
+                                    <p style="margin-bottom: 20px"><a class ="button_href" href="/delreview/`+id+`">Удалить рецензию</a>
+                                    </p>
+                                </div>
+                            </div>`;
+                    }
+                }
+            });
+            //xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+            xhr.setRequestHeader("X-CSRFToken","{{ csrf_token }}");
+            xhr.send(formData);
+        };
+    }
+    </script>
+{% endblock content %}

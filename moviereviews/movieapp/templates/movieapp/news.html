@@ -1,0 +1,28 @@
+{% extends 'movieapp/base.html' %}
+
+{% block title %}Новости{% endblock title %}
+
+{% block welcomeblock %}
+    <header class="header">
+    </header>
+{% endblock welcomeblock %}
+
+{% block content %}
+
+{% for n in news %}
+<div style="margin-bottom: 20px; border : 1px solid lightgray; border-radius: 10px; padding: 10px">
+    <p style="font-size: 22px; font-weight: bold; margin-bottom: 20px">{{n.News_title}}</p>
+    <p style="color: gray; margin-bottom: 20px" >{{n.time_create|date:"d-m-Y"}}</p>
+    <p>{{n.Main_text|linebreaks}}</p>
+    {% if request.user.profile.is_worker %}
+        <p style="margin-bottom: 0px"><a class="button_href" href="{% url 'del_news' n.id %}">Удалить новость</a></p>
+    {% endif %}
+</div>
+
+
+
+
+
+{% endfor %}
+
+{% endblock content %}

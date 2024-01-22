@@ -1,0 +1,31 @@
+{% extends 'movieapp/base.html' %}
+
+{% block title %}Фильмы{% endblock title %}
+
+{% block welcomeblock %}
+    <header class="header">
+    </header>
+{% endblock welcomeblock %}
+
+{% block content %}
+
+
+{% for film in films %}
+    <div class = "filmcontainer" >
+    <div class = "film_picture_container">
+        <p><img class ="film_picture"  src="{{film.picture.url}}"></p>
+    </div>
+    <div class = "film_list_text_container">
+    <p style="margin-bottom: 20px; font-weight: bold; font-size: 22px">{{film.film_title}}</p>
+        <div class="main_text_div">
+            <p>{{film.description|linebreaks|truncatewords:50}}</p>
+        </div>
+    {% if request.user.profile.is_worker %}
+        <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'del_film' film.id %}">Удалить фильм</a></p>
+    {% endif %}
+    <p style="margin-bottom: 10px"><a class="button_href" href="{% url 'film' film.id %}">Инфорация о фильме</a></p>
+    </div>
+    </div>
+{% endfor %}
+
+{% endblock content %}

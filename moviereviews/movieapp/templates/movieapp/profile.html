@@ -1,0 +1,65 @@
+{% extends 'movieapp/base.html' %}
+
+{% block title %}Профиль{% endblock title %}
+
+{% block welcomeblock %}
+    <header class="header">
+    </header>
+{% endblock welcomeblock %}
+
+{% block content %}
+
+
+<div class="userprofile_container">
+    <div class="useravatar">
+    {% if user.profile.avatar %}
+        <p style ="word-wrap: break-word; margin-bottom: 0px"><img style ="margin-bottom: 20px" class src="{{user.profile.avatar.url}}"></p>
+    {%else%}
+        <p style ="margin-bottom: 0px"><img class src="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png"></p>
+    {% endif %}
+    </div>
+    <div class ="usertext">
+        <p style="font-weight: bold; font-size: 40px; margin-bottom: 20px">{{user.username}}</p>
+    {% if user.profile.status %}
+        <p style="font-weight: bold; font-size: 35px; margin-bottom: 20px">{{user.profile.status}}</p>
+    {% endif %}
+    </div>
+</div>
+
+
+
+{% if my == True and request.user.is_authenticated %}
+    <p style="margin-bottom: 20px"><a class ="button_href" href="{% url 'update_profile_picture' user.profile.pk %}">Изменить фотографию</a></p>
+    <p style="margin-bottom: 20px"><a class ="button_href" href="{% url 'update_profile_status' user.profile.pk %}">Изменить статус</a></p>
+{%endif%}
+{% if reviews %}
+    <p style="margin-bottom: 20px; font-size: 22px; font-weight: bold">Рецензии пользователя:</p>
+{% endif %}
+{% for r in reviews %}
+<div style="margin-bottom: 10px; border: 1px solid lightgray; border-radius: 10px; padding: 10px">
+    <p style="margin-bottom: 20px">Фильм: <a class ="button_href" href="{% url 'film' r.Moviee_id %}">{{r.Moviee}}</a></p>
+    <p style="margin-bottom: 20px; font-size: 22px; font-weight: bold">{{r.Review_title}}</p>
+    <p style="margin-bottom: 20px;">Оценка: {{r.Mark}}/10</p>
+    <div class="main_text_div">
+        <p>{{r.Main_text|linebreaks}}</p>
+    </div>
+    {% if r.user == request.user or request.user.profile.is_worker == True %}
+        <p style="margin-bottom: 20px"><a class ="button_href" href="{% url 'del_review' r.id %}">Удалить рецензию</a></p>
+    {% endif %}
+</div>
+{% endfor %}
+{% if viewed %}
+    <p style="margin-bottom: 10px; margin-top: 30px">Список просмотренных фильмов:</p>
+{% endif %}
+{% for v in viewed %}
+    <li style="margin-bottom: 5px"><a class ="button_href" href="{% url 'film' v.id %}">{{v.film_title}}</a></li>
+{% endfor %}
+
+{% if favorites  %}
+    <p style="margin-bottom: 10px; margin-top: 40px">Избранное:</p>
+{% endif %}
+{% for f in favorites %}
+   <li style="margin-bottom: 5px;"><a class ="button_href" href="{% url 'film' f.id %}">{{f.film_title}}</a></li>
+{% endfor %}
+
+{% endblock content %}

@@ -1,0 +1,20 @@
+{% extends 'movieapp/base.html' %}
+
+{% block title %}Обновление аватара{% endblock title %}
+
+{% block welcomeblock %}
+
+    <header class="header">
+
+    </header>
+
+{% endblock welcomeblock %}
+
+{% block content %}
+
+<form  method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type = "file" name = "avatarfile">
+    <button type = "submit">Загрузка</button>
+</form>
+{% endblock content %}

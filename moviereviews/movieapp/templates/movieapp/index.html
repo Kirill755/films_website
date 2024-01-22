@@ -1,0 +1,51 @@
+{% extends 'movieapp/base.html' %}
+
+{% block title %}Главная страница{% endblock title %}
+
+    {% block welcomeblock %}
+
+    <header class="header">
+      <div class="container">
+        <div class="content">
+            {% if welcome %}
+                <h1>{{welcome}} Добро пожаловать на сайт! Смотрите рецензии на фильмы и оставляйте свои рецензии.</h1>
+            {% else %}
+                <h1>Добро пожаловать на сайт! Смотрите рецензии на фильмы и оставляйте свои рецензии.</h1>
+            {% endif %}
+        </div>
+      </div>
+    </header>
+
+    {% endblock welcomeblock %}
+
+{% block content %}
+<p style="margin-bottom: 20px; font-size: 22px; font-weight: bold">Последние рецензии:</p>
+{% for r in reviews %}
+    <div class = "review-container">
+        <div class = "review-leftphoto">
+            {% for u in users %}
+                {% if u.id == r.user_id %}
+
+                    {% if u.profile.avatar %}
+                        <p style="margin-bottom: 20px"><img class = "imagereview" src="{{u.profile.avatar.url}}"></p>
+                    {%else%}
+                        <p style="margin-bottom: 20px"><img class = "imagereview" src="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png"></p>
+                    {% endif %}
+                    <p style="word-wrap: break-word; margin-bottom: 20px"><a class="button_href" href="{% url 'show_profile' u.id %}">{{u.username}}</a></p>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class ="review-righttext">
+            <p style="margin-bottom: 20px">Фильм: <a class ="button_href" href="{% url 'film' r.Moviee_id %}">{{r.Moviee}}</a></p>
+            <p style="margin-bottom: 20px; font-size: 20px; font-weight: bold">{{r.Review_title}}</p>
+            <p style="margin-bottom: 20px">Оценка: {{r.Mark}}/10</p>
+            <div class="main_text_div">
+            <p>{{r.Main_text|linebreaks}}</p>
+            </div>
+            {% if r.user == request.user or request.user.profile.is_worker == True %}
+                <p style="margin-bottom: 20px"><a class="button_href" href="{% url 'del_review' r.id %}">Удалить рецензию</a></p>
+            {% endif %}
+        </div>
+    </div>
+{% endfor %}
+{% endblock content %}
